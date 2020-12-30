@@ -5,18 +5,26 @@ import Shop from './pages/Shop';
 import { Route , Switch } from 'react-router-dom';
 import Header from './components/Header';
 import Login from './pages/Login';
-import { auth } from './Firebase/firebase.utils';
+import { auth, createUserProfileDocument } from './Firebase/firebase.utils';
 
 function App() {
 
-  const [currentUser, setCurrentUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState({id: ''})
 
   useEffect(() => {
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged( async userAuth => {
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth);
 
-      setCurrentUser(user);
-
-      console.log(user)
+        userRef.onSnapshot(snapShot => {
+          setCurrentUser({
+            id: snapShot.id,
+              ...snapShot.data()
+            })
+        });        
+      } else {
+          setCurrentUser(userAuth)
+        }
     })
   }, []);
 
